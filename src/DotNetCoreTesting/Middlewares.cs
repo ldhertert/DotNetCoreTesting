@@ -9,7 +9,6 @@ namespace DotNetCoreTesting
 {
     public class WrappingMiddleware
     {
-        // The middleware delegate to call after this one finishes processing
         private readonly RequestDelegate _next;
 
         public WrappingMiddleware(RequestDelegate next)
@@ -19,17 +18,17 @@ namespace DotNetCoreTesting
 
         public async Task Invoke(HttpContext httpContext)
         {
-            await Before();
+            //If you make a sync call like this, the BTs are detected
+            //Thread.Sleep(1000);
 
-            //httpContext.Response.OnStarting((state) => After(), null);
+            //Any sort of async call I make seems to be breaking BT detection
+            await Before();
 
             await _next.Invoke(httpContext);
         }
 
         public Task Before()
         {
-            Console.WriteLine("Before");
-
             //This breaks BT Detection
             //return Task.Delay(1000);
 
@@ -38,36 +37,6 @@ namespace DotNetCoreTesting
 
             //This breaks BT Detection
             return Task.Factory.StartNew(() => Thread.Sleep(1000));
-        }
-
-        public Task After()
-        {
-            Console.WriteLine("After");
-            //return Task.Delay(1000);
-            //return Task.Run(() => Thread.Sleep(1000));
-            return Task.Factory.StartNew(() => Thread.Sleep(1000));
-        }
-    }
-
-    public class CustomResponseMiddleware {
-        private readonly RequestDelegate _next;
-
-        public CustomResponseMiddleware(RequestDelegate next)
-        {
-            _next = next;
-        }
-
-        public async Task Invoke(HttpContext httpContext)
-        {
-            if (httpContext.Request.Path.Value.Contains("custom"))
-            {
-                //await Task.Delay(1000);
-                Thread.Sleep(1000);
-                await httpContext.Response.WriteAsync("custom response");
-                return;
-            }
-
-            await _next.Invoke(httpContext);
         }
     }
 }

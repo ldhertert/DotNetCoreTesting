@@ -49,8 +49,6 @@ namespace DotNetCoreTesting
 
             app.UseStaticFiles();
 
-            app.UseMiddleware<CustomResponseMiddleware>();
-
             app.UseMiddleware<WrappingMiddleware>();
 
             app.UseMvc(routes =>
@@ -59,8 +57,7 @@ namespace DotNetCoreTesting
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
-
-            //app.UseMiddleware<AfterMiddleware>();
+ 
         }
     }
 }
